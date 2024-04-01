@@ -157,6 +157,49 @@ esac
 AC_SUBST(QT5_IM_MODULE_DIR)
 
 dnl ***************************************************************************
+dnl im-nimf-qt6
+dnl ***************************************************************************
+
+PKG_CHECK_MODULES(IM_NIMF_QT6_DEPS, [Qt6Core Qt6Gui Qt6Widgets], [],
+  [AC_MSG_ERROR([Package requirements (Qt6Core Qt6Gui Qt6Widgets) were not met:
+  If you are using Debian, please install 'qt6-base-dev'.])])
+
+QT6_VERSION=`pkg-config --modversion Qt6Core`
+QT6_INCLUDE_DIR=`pkg-config --variable=includedir Qt6Core`
+QT6_CORE_PRIVATE_INCLUDE_PATH=$QT6_INCLUDE_DIR/QtCore/$QT6_VERSION
+QT6_GUI_PRIVATE_INCLUDE_PATH=$QT6_INCLUDE_DIR/QtGui/$QT6_VERSION
+
+AC_CHECK_FILES(
+   [$QT6_GUI_PRIVATE_INCLUDE_PATH/QtGui/qpa/qplatforminputcontext.h
+    $QT6_GUI_PRIVATE_INCLUDE_PATH/QtGui/qpa/qplatforminputcontextplugin_p.h], [],
+    AC_MSG_ERROR([Qt 6 base private development files are not found.]))
+
+AC_SUBST(QT6_CORE_PRIVATE_INCLUDE_PATH)
+AC_SUBST(QT6_GUI_PRIVATE_INCLUDE_PATH)
+
+AC_PATH_PROGS([QT6_MOC], [moc], [no],
+              [`pkg-config --variable=libexecdir Qt6Core`])
+if test "x$QT6_MOC" = "xno"; then
+  AC_MSG_ERROR([moc for qt6 not found])
+fi
+
+QT6_LIB_DIR=`pkg-config --variable=libdir Qt6Core`
+
+case `pkg-config --variable=includedir Qt6Core` in
+  */qt6)
+    QT6_IM_MODULE_DIR=$QT6_LIB_DIR/qt6/plugins/platforminputcontexts
+    ;;
+  */qt)
+    QT6_IM_MODULE_DIR=$QT6_LIB_DIR/qt/plugins/platforminputcontexts
+    ;;
+  *)
+    AC_MSG_ERROR(Can not determine Qt6 plugins/platforminputcontexts directory)
+    ;;
+esac
+
+AC_SUBST(QT6_IM_MODULE_DIR)
+
+dnl ***************************************************************************
 dnl  Check for im-nimf-gtk
 dnl ***************************************************************************
 
@@ -308,6 +351,7 @@ AC_OUTPUT([
   modules/clients/Makefile
   modules/clients/gtk/Makefile
   modules/clients/qt5/Makefile
+  modules/clients/qt6/Makefile
   modules/engines/Makefile
   modules/engines/nimf-anthy/Makefile
   modules/engines/nimf-libhangul/Makefile
